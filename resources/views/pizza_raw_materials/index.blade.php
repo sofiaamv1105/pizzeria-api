@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Relaciones Pizza - Materia Prima</title>
+  </head>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ route('dashboard') }}">Menu Principal</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button class="btn btn-outline-light btn-sm" type="submit">Cerrar sesión</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+</nav>
+
+  <body>
+    <div class="container mt-4">
+      <h1>Materia Prima de Pizzas</h1>
+      <a href="{{ route('pizza_raw_materials.create') }}" class="btn btn-success mb-3">Agregar Relación</a>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Pizza</th>
+            <th>Materia Prima</th>
+            <th>Cantidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($pizzaRawMaterials as $rel)
+          <tr>
+            <td>{{ $rel->id }}</td>
+            <td>{{ $rel->pizza->name }}</td>
+            <td>{{ $rel->rawMaterial->name }}</td>
+            <td>{{ $rel->quantity }}</td>
+            <td>
+              <a href="{{ route('pizza_raw_materials.edit', $rel->id) }}" class="btn btn-info">Editar</a>
+              <form action="{{ route('pizza_raw_materials.destroy', $rel->id) }}" method="POST" style="display: inline-block">
+                @csrf
+                @method('DELETE')
+                <input class="btn btn-danger" type="submit" value="Eliminar">
+              </form>
+            </td>
+          </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
