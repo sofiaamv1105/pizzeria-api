@@ -20,7 +20,10 @@
           <label for="role" class="form-label">Rol</label>
             <select name="role" id="role" class="form-control" required>
               <option value="cliente">Cliente</option>
-              <option value="empleado">Empleado</option>
+              <option value="admin">Administrador</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="secretaria">Secretario</option>
+              <option value="cajero">Cajero</option>
             </select>
         </div>
 
