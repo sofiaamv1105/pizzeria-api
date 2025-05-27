@@ -1,40 +1,28 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Purchase;
-use App\Models\Supplier;
-use App\Models\RawMaterial;
 
 class PurchaseController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar todas las compras con sus proveedores y materias primas.
      */
     public function index()
     {
         $purchases = Purchase::with(['supplier', 'rawMaterial'])->get();
-        return view('purchases.index', compact('purchases'));
+        return response()->json(['purchases' => $purchases]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $suppliers = Supplier::all();
-        $rawMaterials = RawMaterial::all();
-        return view('purchases.create', compact('suppliers', 'rawMaterials'));
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
+     * Guardar una nueva compra.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'raw_material_id' => 'required|exists:raw_materials,id',
             'quantity' => 'required|numeric|min:0',
@@ -42,38 +30,37 @@ class PurchaseController extends Controller
             'purchase_date' => 'required|date',
         ]);
 
-        Purchase::create($request->all());
-        return redirect()->route('purchases.index')->with('success', 'Compra registrada con éxito.');
+        $purchase = Purchase::create($validated);
+
+        return response()->json(['purchase' => $purchase, 'message' => 'Compra registrada con éxito.'], 201);
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar una compra específica.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $purchase = Purchase::with(['supplier', 'rawMaterial'])->find($id);
+
+        if (!$purchase) {
+            return response()->json(['error' => 'Compra no encontrada.'], 404);
+        }
+
+        return response()->json(['purchase' => $purchase]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Actualizar una compra existente.
      */
-    public function edit($id)
+    public function update(Request $request, $id)
     {
-       $purchase = Purchase::findOrFail($id);
-       $suppliers = Supplier::all();
-       $rawMaterials = RawMaterial::all();
+        $purchase = Purchase::find($id);
 
-    return view('purchases.edit', compact('purchase', 'suppliers', 'rawMaterials'));
-   }
+        if (!$purchase) {
+            return response()->json(['error' => 'Compra no encontrada.'], 404);
+        }
 
-
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Purchase $purchase)
-    {
-        $request->validate([
+        $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'raw_material_id' => 'required|exists:raw_materials,id',
             'quantity' => 'required|numeric|min:0',
@@ -81,16 +68,24 @@ class PurchaseController extends Controller
             'purchase_date' => 'required|date',
         ]);
 
-        $purchase->update($request->all());
-        return redirect()->route('purchases.index')->with('success', 'Compra actualizada con éxito.');
+        $purchase->update($validated);
+
+        return response()->json(['purchase' => $purchase, 'message' => 'Compra actualizada con éxito.']);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar una compra.
      */
-    public function destroy(Purchase $purchase)
+    public function destroy($id)
     {
+        $purchase = Purchase::find($id);
+
+        if (!$purchase) {
+            return response()->json(['error' => 'Compra no encontrada.'], 404);
+        }
+
         $purchase->delete();
-        return redirect()->route('purchases.index')->with('success', 'Compra eliminada con éxito.');
+
+        return response()->json(['message' => 'Compra eliminada con éxito.']);
     }
 }
