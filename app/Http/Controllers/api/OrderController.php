@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Client;
@@ -11,27 +12,16 @@ use App\Models\Employee;
 class OrderController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar todos los pedidos.
      */
     public function index()
     {
         $orders = Order::with(['client', 'branch', 'deliveryPerson'])->get();
-        return view('orders.index', compact('orders'));
+        return response()->json(['orders' => $orders]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $clients = Client::all();
-        $branches = Branch::all();
-        $employees = Employee::all();
-        return view('orders.create', compact('clients', 'branches', 'employees'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Crear un nuevo pedido.
      */
     public function store(Request $request)
     {
@@ -44,36 +34,36 @@ class OrderController extends Controller
             'delivery_type' => 'required|in:en_local,a_domicilio',
         ]);
 
-        Order::create($validated);
-        return redirect()->route('orders.index')->with('success', 'Pedido creado correctamente.');
+        $order = Order::create($validated);
+
+        return response()->json(['order' => $order], 201);
     }
 
-
     /**
-     * Display the specified resource.
+     * Mostrar un pedido específico.
      */
     public function show(string $id)
     {
-        return view('orders.show', compact('order'));
+        $order = Order::with(['client', 'branch', 'deliveryPerson'])->find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Pedido no encontrado.'], 404);
+        }
+
+        return response()->json(['order' => $order]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $order = Order::findOrFail($id);
-        $clients = Client::all();
-        $branches = Branch::all();
-        $employees = Employee::all();
-        return view('orders.edit', compact('order', 'clients', 'branches', 'employees'));
-    }
-    /**
-     * Update the specified resource in storage.
+     * Actualizar un pedido.
      */
     public function update(Request $request, string $id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Pedido no encontrado.'], 404);
+        }
+
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'branch_id' => 'required|exists:branches,id',
@@ -84,15 +74,26 @@ class OrderController extends Controller
         ]);
 
         $order->update($validated);
-        return redirect()->route('orders.index')->with('success', 'Pedido actualizado correctamente.');
+
+        return response()->json(['order' => $order]);
     }
+
     /**
-     * Remove the specified resource from storage.
+     * Eliminar un pedido.
      */
     public function destroy(string $id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Pedido no encontrado.'], 404);
+        }
+
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Pedido eliminado correctamente.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pedido eliminado correctamente.'
+        ]);
     }
 }
