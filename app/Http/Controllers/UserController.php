@@ -1,80 +1,85 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Client;
-use App\Models\Employee;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Listar todos los usuarios con sus relaciones client y employee.
      */
     public function index()
     {
         $users = User::with(['client', 'employee'])->get();
-        return view('users.index', compact('users'));
+        return response()->json(['users' => $users]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('users.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Guardar un nuevo usuario.
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|unique:users',
-        'password' => 'required|string|min:6',
-        'role' => 'required|string',
-    ]);
-
-    User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => bcrypt($request->password),
-        'role' => $request->role,
-    ]);
-
-    return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
-}
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
     {
-        //
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|unique:users',
+            'password' => 'required|string|min:6',
+            'role'     => 'required|string|in:cliente,empleado',
+        ]);
+
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => $validated['role'],
+        ]);
+
+        // Crear datos específicos según rol
+        if ($user->role === 'cliente') {
+            $user->client()->create([
+                'address' => $request->input('address', ''),
+                'phone'   => $request->input('phone', ''),
+            ]);
+        } elseif ($user->role === 'empleado') {
+            $user->employee()->create([
+                'position'              => $request->input('position', ''),
+                'identification_number' => $request->input('identification_number', ''),
+                'salary'                => $request->input('salary', 0),
+                'hire_date'             => $request->input('hire_date', null),
+            ]);
+        }
+
+        return response()->json(['user' => $user, 'message' => 'Usuario creado exitosamente.'], 201);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Mostrar un usuario específico con sus relaciones.
      */
-    public function edit(string $id)
+    public function show($id)
     {
-        $user = User::findOrFail($id); // Obtener el usuario desde la base de datos
-        return view('users.edit', compact('user')); // Pasarlo a la vista
+        $user = User::with(['client', 'employee'])->find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado.'], 404);
+        }
+
+        return response()->json(['user' => $user]);
     }
 
-
     /**
-     * Update the specified resource in storage.
+     * Actualizar un usuario.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado.'], 404);
+        }
 
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
@@ -83,7 +88,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6|confirmed',
         ]);
 
-        if ($validated['password']) {
+        if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -91,36 +96,47 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        if ($validated['role'] === 'cliente') {
+        // Actualizar o crear datos según rol
+        if ($user->role === 'cliente') {
             $user->client()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'address' => $request->input('address'),
-                    'phone'   => $request->input('phone'),
+                    'address' => $request->input('address', ''),
+                    'phone'   => $request->input('phone', ''),
                 ]
             );
-        } elseif ($validated['role'] === 'empleado') {
+            // En caso que rol cambie, eliminar relación employee si existe
+            $user->employee()->delete();
+        } elseif ($user->role === 'empleado') {
             $user->employee()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'position' => $request->input('position'),
-                    'identification_number' => $request->input('identification_number'),
-                    'salary' => $request->input('salary'),
-                    'hire_date' => $request->input('hire_date'),
+                    'position'              => $request->input('position', ''),
+                    'identification_number' => $request->input('identification_number', ''),
+                    'salary'                => $request->input('salary', 0),
+                    'hire_date'             => $request->input('hire_date', null),
                 ]
             );
+            // En caso que rol cambie, eliminar relación client si existe
+            $user->client()->delete();
         }
 
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
+        return response()->json(['user' => $user, 'message' => 'Usuario actualizado correctamente.']);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Eliminar un usuario.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado.'], 404);
+        }
+
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'Usuario eliminado.');
+
+        return response()->json(['message' => 'Usuario eliminado correctamente.']);
     }
 }
