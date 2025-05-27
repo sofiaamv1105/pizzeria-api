@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Branch;
 
@@ -14,10 +13,8 @@ class BranchController extends Controller
      */
     public function index()
     {
-        $branches = DB ::table("branches")
-            ->select("id", "name", "address")
-            ->get();
-       return json_encode(['branches' => $branches]);
+        $branches = Branch::all();
+        return response()->json(['branches' => $branches]);
     }
 
     /**
@@ -35,7 +32,7 @@ class BranchController extends Controller
             'address' => $request->address,
         ]);
 
-        return json_encode(['branch' => $branch], 201);
+        return response()->json(['branch' => $branch], 201);
     }
 
     /**
@@ -49,7 +46,7 @@ class BranchController extends Controller
             return response()->json(['error' => 'Sucursal no encontrada.'], 404);
         }
 
-        return json_encode(['branch' => $branch]);
+        return response()->json(['branch' => $branch]);
     }
 
     /**
@@ -60,7 +57,7 @@ class BranchController extends Controller
         $branch = Branch::find($id);
 
         if (!$branch) {
-            return json_encode(['error' => 'Sucursal no encontrada.'], 404);
+            return response()->json(['error' => 'Sucursal no encontrada.'], 404);
         }
 
         $request->validate([
@@ -73,7 +70,7 @@ class BranchController extends Controller
             'address' => $request->address,
         ]);
 
-        return json_encode(['branch' => $branch]);
+        return response()->json(['branch' => $branch]);
     }
 
     /**
@@ -85,12 +82,12 @@ class BranchController extends Controller
             $branch = Branch::findOrFail($id);
             $branch->delete();
 
-            return json_encode([
+            return response()->json([
                 'success' => true,
                 'message' => 'Sucursal eliminada correctamente'
             ]);
         } catch (\Exception $e) {
-            return json_encode([
+            return response()->json([
                 'success' => false,
                 'error' => 'No se pudo eliminar la sucursal.',
                 'details' => $e->getMessage()

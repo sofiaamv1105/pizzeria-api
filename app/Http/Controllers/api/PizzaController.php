@@ -5,8 +5,6 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pizza;
-use Illuminate\Support\Facades\DB;
-
 
 class PizzaController extends Controller
 {
@@ -15,11 +13,8 @@ class PizzaController extends Controller
      */
     public function index()
     {
-        $pizzas = DB::table('pizzas')
-            ->select('id', 'name')
-            ->with(['sizes', 'ingredients', 'rawMaterials'])
-            ->get();
-        return json_encode(['pizzas' => $pizzas]);
+        $pizzas = Pizza::with('sizes', 'ingredients', 'rawMaterials')->get();
+        return response()->json(['pizzas' => $pizzas]);
     }
 
     /**
@@ -35,7 +30,7 @@ class PizzaController extends Controller
             'name' => $request->name,
         ]);
 
-        return json_encode(['pizza' => $pizza], 201);
+        return response()->json(['pizza' => $pizza], 201);
     }
 
     /**
@@ -46,10 +41,10 @@ class PizzaController extends Controller
         $pizza = Pizza::with('sizes', 'ingredients', 'rawMaterials')->find($id);
 
         if (!$pizza) {
-            return json_encode(['error' => 'Pizza no encontrada.'], 404);
+            return response()->json(['error' => 'Pizza no encontrada.'], 404);
         }
 
-        return json_encode(['pizza' => $pizza]);
+        return response()->json(['pizza' => $pizza]);
     }
 
     /**
@@ -64,14 +59,14 @@ class PizzaController extends Controller
         $pizza = Pizza::find($id);
 
         if (!$pizza) {
-           return json_encode(['error' => 'Pizza no encontrada.'], 404);
+            return response()->json(['error' => 'Pizza no encontrada.'], 404);
         }
 
         $pizza->update([
             'name' => $request->name,
         ]);
 
-        return json_encode(['pizza' => $pizza]);
+        return response()->json(['pizza' => $pizza]);
     }
 
     /**
@@ -83,12 +78,12 @@ class PizzaController extends Controller
             $pizza = Pizza::findOrFail($id);
             $pizza->delete();
 
-           return json_encode([
+            return response()->json([
                 'success' => true,
                 'message' => 'Pizza eliminada correctamente'
             ]);
         } catch (\Exception $e) {
-            return json_encode([
+            return response()->json([
                 'success' => false,
                 'error' => 'No se pudo eliminar la pizza.',
                 'details' => $e->getMessage()

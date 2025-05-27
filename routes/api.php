@@ -1,153 +1,137 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\api\UserController;
-use App\Http\Controllers\api\PizzaController;
-use App\Http\Controllers\api\PizzaSizeController;
-use App\Http\Controllers\api\ClientController;
 use App\Http\Controllers\api\BranchController;
-use App\Http\Controllers\api\EmployeeController;
-use App\Http\Controllers\api\OrderController;
-use App\Http\Controllers\api\IngredientController;
-use App\Http\Controllers\api\PizzaIngredientController;
+use App\Http\Controllers\api\ClientController;
 use App\Http\Controllers\api\ExtraIngredientController;
+use App\Http\Controllers\api\OrderController;
 use App\Http\Controllers\api\OrderExtraIngredientController;
 use App\Http\Controllers\api\OrderPizzaController;
-use App\Http\Controllers\api\RawMaterialController;
-use App\Http\Controllers\api\SupplierController;
+use App\Http\Controllers\api\PizzaIngredientController;
 use App\Http\Controllers\api\PizzaRawMaterialController;
+use App\Http\Controllers\api\PizzasController;
+use App\Http\Controllers\api\SuppliersController;
+use App\Http\Controllers\api\UsersController;
 use App\Http\Controllers\api\PurchaseController;
-use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\api\PizzaSizeController;
+use App\Http\Controllers\api\EmployesController;
+use App\Http\Controllers\api\RawMaterialsController;
+use App\Http\Controllers\api\IngredientController;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
 
-Route::middleware(['auth'])->group(function () {
-    Route::resource('pizzas', PizzaController::class);
-});
-require __DIR__.'/auth.php';
+// Rutas de branchs
+Route::get('/branches', [BranchController::class, 'index'])->name('branch')->middleware('auth:sanctum');
+Route::post('/branches', [BranchController::class, 'store'])->name('branch.store')->middleware('auth:sanctum');
+Route::get('/branches/{branch}', [BranchController::class, 'show'])->name('branch.show')->middleware('auth:sanctum');
+Route::put('/branches/{branch}', [BranchController::class, 'update'])->name('branch.update')->middleware('auth:sanctum');
+Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])->name('orders.destroy')->middleware('auth:sanctum');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Rutas de clients
+Route::get('/clients', [ClientController::class, 'index'])->name('clients')->middleware('auth:sanctum');
+Route::post('/clients', [ClientController::class, 'store'])->name('clients.store')->middleware('auth:sanctum');
+Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show')->middleware('auth:sanctum');
+Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update')->middleware('auth:sanctum');
+Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy')->middleware('auth:sanctum');
 
-Route::get('/users', [UserController::class, 'index'])->middleware(CheckRole::class.':admin')->name('users.index');
-Route::post('/users', [UserController::class, 'store'])->middleware(CheckRole::class.':admin')->name('users.store');
-Route::get('/users/user', [UserController::class, 'create'])->name('users.create');
-Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('users.destroy');
-Route::put('/users/{user}', [UserController::class, 'update'])->middleware(CheckRole::class.':admin')->name('users.update');
-Route::get('/users/{user}/edit', [UserController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('users.edit');
+// Rutas de employees
+Route::get('/employees', [EmployesController::class, 'index'])->name('employees')->middleware('auth:sanctum');
+Route::post('/employees', [EmployesController::class, 'store'])->name('employees.store')->middleware('auth:sanctum');
+Route::get('/employees/{employee}', [EmployesController::class, 'show'])->name('employees.show')->middleware('auth:sanctum');
+Route::put('/employees/{employee}', [EmployesController::class, 'update'])->name('employees.update')->middleware('auth:sanctum');
+Route::delete('/employees/{employee}', [EmployesController::class, 'destroy'])->name('employees.destroy')->middleware('auth:sanctum');
 
-Route::get('/pizzas', [PizzaController::class, 'index'])->middleware(CheckRole::class.':admin')->name('pizzas.index');
-Route::post('/pizzas', [PizzaController::class, 'store'])->middleware(CheckRole::class.':admin')->name('pizzas.store');
-Route::get('/pizzas/create', [PizzaController::class, 'create'])->middleware(CheckRole::class.':admin')->name('pizzas.create');
-Route::delete('/pizzas/{pizza}', [PizzaController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('pizzas.destroy');
-Route::put('/pizzas/{pizza}', [PizzaController::class, 'update'])->middleware(CheckRole::class.':admin')->name('pizzas.update');
-Route::get('/pizzas/{pizza}/edit', [PizzaController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('pizzas.edit');
+// Rutas de extra_ingredients
+Route::get('/extra_ingredients', [ExtraIngredientController::class, 'index'])->name('extra_ingredients')->middleware('auth:sanctum');
+Route::post('/extra_ingredients', [ExtraIngredientController::class, 'store'])->name('extra_ingredients.store')->middleware('auth:sanctum');
+Route::get('/extra_ingredients/{extra_ingredient}', [ExtraIngredientController::class, 'show'])->name('extra_ingredients.show')->middleware('auth:sanctum');
+Route::put('/extra_ingredients/{extra_ingredient}', [ExtraIngredientController::class, 'update'])->name('extra_ingredients.update')->middleware('auth:sanctum');
+Route::delete('/extra_ingredients/{extra_ingredient}', [ExtraIngredientController::class, 'destroy'])->name('extra_ingredients.destroy')->middleware('auth:sanctum');
 
-Route::get('/pizza_sizes', [PizzaSizeController::class, 'index'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.index');
-Route::post('/pizza_sizes', [PizzaSizeController::class, 'store'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.store');
-Route::get('/pizza_sizes/create', [PizzaSizeController::class, 'create'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.create');
-Route::delete('/pizza_sizes/{pizza_size}', [PizzaSizeController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.destroy');
-Route::put('/pizza_sizes/{pizza_size}', [PizzaSizeController::class, 'update'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.update');
-Route::get('/pizza_sizes/{pizza_size}/edit', [PizzaSizeController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('pizza_sizes.edit');
+// Rutas de orders
+Route::get('/orders', [OrderController::class, 'index'])->name('orders')->middleware('auth:sanctum');
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store')->middleware('auth:sanctum');
+Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show')->middleware('auth:sanctum');
+Route::put('/orders/{order}', [OrderController::class, 'update'])->name('orders.update')->middleware('auth:sanctum');
+Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy')->middleware('auth:sanctum');
 
-Route::get('/clients', [ClientController::class, 'index'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.index');
-Route::post('/clients', [ClientController::class, 'store'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.store');
-Route::get('/clients/create', [ClientController::class, 'create'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.create');
-Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.destroy');
-Route::put('/clients/{client}', [ClientController::class, 'update'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.update');
-Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('clients.edit');
+// Rutas de order_extra_ingredients
+Route::get('/order_extra_ingredients', [OrderExtraIngredientController::class, 'index'])->name('order_extra_ingredients')->middleware('auth:sanctum');
+Route::post('/order_extra_ingredients', [OrderExtraIngredientController::class, 'store'])->name('order_extra_ingredients.store')->middleware('auth:sanctum');
+Route::get('/order_extra_ingredients/{order_extra_ingredient}', [OrderExtraIngredientController::class, 'show'])->name('order_extra_ingredients.show')->middleware('auth:sanctum');
+Route::put('/order_extra_ingredients/{order_extra_ingredient}', [OrderExtraIngredientController::class, 'update'])->name('order_extra_ingredients.update')->middleware('auth:sanctum');
+Route::delete('/order_extra_ingredients/{order_extra_ingredient}', [OrderExtraIngredientController::class, 'destroy'])->name('order_extra_ingredients.destroy')->middleware('auth:sanctum');
 
-Route::get('/branches', [BranchController::class, 'index'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.index');
-Route::post('/branches', [BranchController::class, 'store'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.store');
-Route::get('/branches/create', [BranchController::class, 'create'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.create');
-Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.destroy');
-Route::put('/branches/{branch}', [BranchController::class, 'update'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.update');
-Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->middleware(CheckRole::class.':admin,vendedor')->name('branches.edit');
+// Rutas de order_pizzas
+Route::get('/order_pizzas', [OrderPizzaController::class, 'index'])->name('order_pizzas')->middleware('auth:sanctum');
+Route::post('/order_pizzas', [OrderPizzaController::class, 'store'])->name('order_pizzas.store')->middleware('auth:sanctum');
+Route::get('/order_pizzas/{order_pizza}', [OrderPizzaController::class, 'show'])->name('order_pizzas.show')->middleware('auth:sanctum');
+Route::put('/order_pizzas/{order_pizza}', [OrderPizzaController::class, 'update'])->name('order_pizzas.update')->middleware('auth:sanctum');
+Route::delete('/order_pizzas/{order_pizza}', [OrderPizzaController::class, 'destroy'])->name('order_pizzas.destroy')->middleware('auth:sanctum');
 
-Route::get('/employees', [EmployeeController::class, 'index'])->middleware(CheckRole::class.':admin')->name('employees.index');
-Route::post('/employees', [EmployeeController::class, 'store'])->middleware(CheckRole::class.':admin')->name('employees.store');
-Route::get('/employees/create', [EmployeeController::class, 'create'])->middleware(CheckRole::class.':admin')->name('employees.create');
-Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('employees.destroy');
-Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->middleware(CheckRole::class.':admin')->name('employees.update');
-Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('employees.edit');
+// Rutas de pizza_ingredients
+Route::get('/pizza_ingredients', [PizzaIngredientController::class, 'index'])->name('pizza_ingredients')->middleware('auth:sanctum');
+Route::post('/pizza_ingredients', [PizzaIngredientController::class, 'store'])->name('pizza_ingredients.store')->middleware('auth:sanctum');
+Route::get('/pizza_ingredients/{pizza_ingredient}', [PizzaIngredientController::class, 'show'])->name('pizza_ingredients.show')->middleware('auth:sanctum');
+Route::put('/pizza_ingredients/{pizza_ingredient}', [PizzaIngredientController::class, 'update'])->name('pizza_ingredients.update')->middleware('auth:sanctum');
+Route::delete('/pizza_ingredients/{pizza_ingredient}', [PizzaIngredientController::class, 'destroy'])->name('pizza_ingredients.destroy')->middleware('auth:sanctum');
 
-Route::get('/orders', [OrderController::class, 'index'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.index');
-Route::post('/orders', [OrderController::class, 'store'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.store');
-Route::get('/orders/create', [OrderController::class, 'create'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.create');
-Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.destroy');
-Route::put('/orders/{order}', [OrderController::class, 'update'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.update');
-Route::get('/orders/{order}/edit', [OrderController::class, 'edit'])->middleware(CheckRole::class.':admin,vendedor,cliente')->name('orders.edit');
+// Rutas de pizza raw materials
+Route::get('/pizza-raw-materials', [PizzaRawMaterialController::class, 'index'])->name('pizza-raw-materials')->middleware('auth:sanctum');
+Route::post('/pizza-raw-materials', [PizzaRawMaterialController::class, 'store'])->name('pizza-raw-materials.store')->middleware('auth:sanctum');
+Route::get('/pizza-raw-materials/{id}', [PizzaRawMaterialController::class, 'show'])->name('pizza-raw-materials.show')->middleware('auth:sanctum');
+Route::put('/pizza-raw-materials/{id}', [PizzaRawMaterialController::class, 'update'])->name('pizza-raw-materials.update')->middleware('auth:sanctum');
+Route::delete('/pizza-raw-materials/{id}', [PizzaRawMaterialController::class, 'destroy'])->name('pizza-raw-materials.destroy')->middleware('auth:sanctum');
 
-Route::get('/ingredients', [IngredientController::class, 'index'])->middleware(CheckRole::class.':admin')->name('ingredients.index');
-Route::post('/ingredients', [IngredientController::class, 'store'])->middleware(CheckRole::class.':admin')->name('ingredients.store');
-Route::get('/ingredients/create', [IngredientController::class, 'create'])->middleware(CheckRole::class.':admin')->name('ingredients.create');
-Route::delete('/ingredients/{ingredient}', [IngredientController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('ingredients.destroy');
-Route::put('/ingredients/{ingredient}', [IngredientController::class, 'update'])->middleware(CheckRole::class.':admin')->name('ingredients.update');
-Route::get('/ingredients/{ingredient}/edit', [IngredientController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('ingredients.edit');
+//Rutas de pizzas
+Route::get('/pizzas', [PizzasController::class, 'index'])->name('pizzas')->middleware('auth:sanctum');
+Route::post('/pizzas', [PizzasController::class, 'store'])->name('pizzas.store')->middleware('auth:sanctum');
+Route::get('/pizzas/{pizza}', [PizzasController::class, 'show'])->name('pizzas.show')->middleware('auth:sanctum');
+Route::put('/pizzas/{pizza}', [PizzasController::class, 'update'])->name('pizzas.update')->middleware('auth:sanctum');
+Route::delete('/pizzas/{pizza}', [PizzasController::class, 'destroy'])->name('pizzas.destroy')->middleware('auth:sanctum');
 
-Route::get('/pizza_ingredients', [PizzaIngredientController::class, 'index'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.index');
-Route::post('/pizza_ingredients', [PizzaIngredientController::class, 'store'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.store');
-Route::get('/pizza_ingredients/create', [PizzaIngredientController::class, 'create'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.create');
-Route::delete('/pizza_ingredients/{pizza_ingredient}', [PizzaIngredientController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.destroy');
-Route::put('/pizza_ingredients/{pizza_ingredient}', [PizzaIngredientController::class, 'update'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.update');
-Route::get('/pizza_ingredients/{pizza_ingredient}/edit', [PizzaIngredientController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('pizza_ingredients.edit');
+//Rutas de users
+Route::get('/users', [UsersController::class, 'index'])->name('users')->middleware('auth:sanctum');
+Route::post('/users', [UsersController::class, 'store'])->name('users.store')->middleware('auth:sanctum');
+Route::get('/users/{user}', [UsersController::class, 'show'])->name('users.show')->middleware('auth:sanctum');
+Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update')->middleware('auth:sanctum');
+Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy')->middleware('auth:sanctum');
 
-Route::get('/extra_ingredients', [ExtraIngredientController::class, 'index'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.index');
-Route::post('/extra_ingredients', [ExtraIngredientController::class, 'store'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.store');
-Route::get('/extra_ingredients/create', [ExtraIngredientController::class, 'create'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.create');
-Route::delete('/extra_ingredients/{extra_ingredient}', [ExtraIngredientController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.destroy');
-Route::put('/extra_ingredients/{extra_ingredient}', [ExtraIngredientController::class, 'update'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.update');
-Route::get('/extra_ingredients/{extra_ingredient}/edit', [ExtraIngredientController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('extra_ingredients.edit');
+// Rutas de purchases
+Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases')->middleware('auth:sanctum');
+Route::post('/purchases', [PurchaseController::class, 'store'])->name('purchases.store')->middleware('auth:sanctum');
+Route::get('/purchases/{id}', [PurchaseController::class, 'show'])->name('purchases.show')->middleware('auth:sanctum');
+Route::put('/purchases/{id}', [PurchaseController::class, 'update'])->name('purchases.update')->middleware('auth:sanctum');
+Route::delete('/purchases/{id}', [PurchaseController::class, 'destroy'])->name('purchases.destroy')->middleware('auth:sanctum');
 
-Route::get('/order_extra_ingredients', [OrderExtraIngredientController::class, 'index'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.index');
-Route::post('/order_extra_ingredients', [OrderExtraIngredientController::class, 'store'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.store');
-Route::get('/order_extra_ingredients/create', [OrderExtraIngredientController::class, 'create'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.create');
-Route::delete('/order_extra_ingredients/{order_extra_ingredient}', [OrderExtraIngredientController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.destroy');
-Route::put('/order_extra_ingredients/{order_extra_ingredient}', [OrderExtraIngredientController::class, 'update'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.update');
-Route::get('/order_extra_ingredients/{order_extra_ingredient}/edit', [OrderExtraIngredientController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('order_extra_ingredients.edit');
+// Rutas de raw materials
+Route::get('/raw-materials', [RawMaterialsController::class, 'index'])->name('raw-materials')->middleware('auth:sanctum');
+Route::post('/raw-materials', [RawMaterialsController::class, 'store'])->name('raw-materials.store')->middleware('auth:sanctum');
+Route::get('/raw-materials/{id}', [RawMaterialsController::class, 'show'])->name('raw-materials.show')->middleware('auth:sanctum');
+Route::put('/raw-materials/{id}', [RawMaterialsController::class, 'update'])->name('raw-materials.update')->middleware('auth:sanctum');
+Route::delete('/raw-materials/{id}', [RawMaterialsController::class, 'destroy'])->name('raw-materials.destroy')->middleware('auth:sanctum');
 
-Route::get('/order_pizzas', [OrderPizzaController::class, 'index'])->middleware(CheckRole::class.':admin')->name('order_pizzas.index');
-Route::post('/order_pizzas', [OrderPizzaController::class, 'store'])->middleware(CheckRole::class.':admin')->name('order_pizzas.store');
-Route::get('/order_pizzas/create', [OrderPizzaController::class, 'create'])->middleware(CheckRole::class.':admin')->name('order_pizzas.create');
-Route::delete('/order_pizzas/{order_pizza}', [OrderPizzaController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('order_pizzas.destroy');
-Route::put('/order_pizzas/{order_pizza}', [OrderPizzaController::class, 'update'])->middleware(CheckRole::class.':admin')->name('order_pizzas.update');
-Route::get('/order_pizzas/{order_pizza}/edit', [OrderPizzaController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('order_pizzas.edit');
+// Rutas de suppliers
+Route::get('/suppliers', [SuppliersController::class, 'index'])->name('suppliers')->middleware('auth:sanctum');
+Route::post('/suppliers', [SuppliersController::class, 'store'])->name('suppliers.store')->middleware('auth:sanctum');
+Route::get('/suppliers/{id}', [SuppliersController::class, 'show'])->name('suppliers.show')->middleware('auth:sanctum');
+Route::put('/suppliers/{id}', [SuppliersController::class, 'update'])->name('suppliers.update')->middleware('auth:sanctum');
+Route::delete('/suppliers/{id}', [SuppliersController::class, 'destroy'])->name('suppliers.destroy')->middleware('auth:sanctum');
 
-Route::get('/raw_materials', [RawMaterialController::class, 'index'])->middleware(CheckRole::class.':admin')->name('raw_materials.index');
-Route::post('/raw_materials', [RawMaterialController::class, 'store'])->middleware(CheckRole::class.':admin')->name('raw_materials.store');
-Route::get('/raw_materials/create', [RawMaterialController::class, 'create'])->middleware(CheckRole::class.':admin')->name('raw_materials.create');
-Route::delete('/raw_materials/{raw_material}', [RawMaterialController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('raw_materials.destroy');
-Route::put('/raw_materials/{raw_material}', [RawMaterialController::class, 'update'])->middleware(CheckRole::class.':admin')->name('raw_materials.update');
-Route::get('/raw_materials/{raw_material}/edit', [RawMaterialController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('raw_materials.edit');
+// Rutas de pizza_sizes
+Route::get('/pizza-sizes', [PizzaSizeController::class, 'index'])->name('pizza-sizes')->middleware('auth:sanctum');
+Route::post('/pizza-sizes', [PizzaSizeController::class, 'store'])->name('pizza-sizes.store')->middleware('auth:sanctum');
+Route::get('/pizza-sizes/{id}', [PizzaSizeController::class, 'show'])->name('pizza-sizes.show')->middleware('auth:sanctum');
+Route::put('/pizza-sizes/{id}', [PizzaSizeController::class, 'update'])->name('pizza-sizes.update')->middleware('auth:sanctum');
+Route::delete('/pizza-sizes/{id}', [PizzaSizeController::class, 'destroy'])->name('pizza-sizes.destroy')->middleware('auth:sanctum');
 
-Route::get('/suppliers', [SupplierController::class, 'index'])->middleware(CheckRole::class.':admin')->name('suppliers.index');
-Route::post('/suppliers', [SupplierController::class, 'store'])->middleware(CheckRole::class.':admin')->name('suppliers.store');
-Route::get('/suppliers/create', [SupplierController::class, 'create'])->middleware(CheckRole::class.':admin')->name('suppliers.create');
-Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('suppliers.destroy');
-Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->middleware(CheckRole::class.':admin')->name('suppliers.update');
-Route::get('/suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('suppliers.edit');
-
-Route::get('/pizza_raw_materials', [PizzaRawMaterialController::class, 'index'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.index');
-Route::post('/pizza_raw_materials', [PizzaRawMaterialController::class, 'store'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.store');
-Route::get('/pizza_raw_materials/create', [PizzaRawMaterialController::class, 'create'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.create');
-Route::delete('/pizza_raw_materials/{pizza_raw_material}', [PizzaRawMaterialController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.destroy');
-Route::put('/pizza_raw_materials/{pizza_raw_material}', [PizzaRawMaterialController::class, 'update'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.update');
-Route::get('/pizza_raw_materials/{pizza_raw_material}/edit', [PizzaRawMaterialController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('pizza_raw_materials.edit');
-
-Route::get('/purchases', [PurchaseController::class, 'index'])->middleware(CheckRole::class.':admin')->name('purchases.index');
-Route::post('/purchases', [PurchaseController::class, 'store'])->middleware(CheckRole::class.':admin')->name('purchases.store');
-Route::get('/purchases/create', [PurchaseController::class, 'create'])->middleware(CheckRole::class.':admin')->name('purchases.create');
-Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->middleware(CheckRole::class.':admin')->name('purchases.destroy');
-Route::put('/purchases/{purchase}', [PurchaseController::class, 'update'])->middleware(CheckRole::class.':admin')->name('purchases.update');
-Route::get('/purchases/{purchases}/edit', [PurchaseController::class, 'edit'])->middleware(CheckRole::class.':admin')->name('purchases.edit');
-
-});
+// Rutas de ingredients
+Route::get('/ingredients', [IngredientController::class, 'index'])->name('ingredients')->middleware('auth:sanctum');
+Route::post('/ingredients', [IngredientController::class, 'store'])->name('ingredients.store')->middleware('auth:sanctum');
+Route::get('/ingredients/{id}', [IngredientController::class, 'show'])->name('ingredients.show')->middleware('auth:sanctum');
+Route::put('/ingredients/{id}', [IngredientController::class, 'update'])->name('ingredients.update')->middleware('auth:sanctum');
+Route::delete('/ingredients/{id}', [IngredientController::class, 'destroy'])->name('ingredients.destroy')->middleware('auth:sanctum');
