@@ -16,7 +16,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['client', 'branch', 'deliveryPerson'])->get();
+        $orders = Order::with(['client.user', 'branch', 'deliveryPerson'])->get();
         return response()->json(['orders' => $orders]);
     }
 
